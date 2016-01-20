@@ -3,5 +3,5 @@
 */*.pyc
 .DS_Store
 */*.mexmaci64
-*/*_sandbox
-
+matlab/_sandbox.m
+julia/_sandbox.ipynb
