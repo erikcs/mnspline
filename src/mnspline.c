@@ -1,13 +1,12 @@
 /* mnspline.c
  * Natural cubic spline interpolation
  * 
- * based on 
- * Numerical Recipes in C: The Art of Scientific Computing
+ * based on "3.3 Cubic Spline Interpolation" in 
+ * Numerical Recipes in C: The Art of Scientific Computing, 2nd edition.
  *
  * With additions: (January 2016)
- *  performs interpolation on an array
- *  caches the previous result to avoid bisecting on every iteration
- *  interpolates array in parallell with threads (OpenMP) 
+ *  performs interpolation on an array in parallel (with OpenMP)
+ *  caches the previous lookup result to avoid bisecting on every iteration 
  */
 
 #include <stdlib.h>
@@ -15,11 +14,10 @@
 
 static inline void bisect(const double *pxa, const double x, int *klo, int *khi);
 
-//#define DEBUG 1
-
 /* spline - calculate the 2nd. derivatives of the interpolating function
- * only called once - gives input to splint
- * returns -1 on malloc failure
+ * only needs to be called once - gives input to splint
+ * the boundary conditions at x1 and xN is zero.
+ * returns -1 on malloc failure. Does no input validation (can be done in wrapper)
  */
 int spline(const double *px,      // Array of function evaluation points, with x[1] < x[2] < ... < x[n]
                 const double *py, // Array of function evaluated at above points
@@ -60,7 +58,7 @@ int spline(const double *px,      // Array of function evaluation points, with x
 }
 
 /* splint - perform the interpolation
- * returns 0 - currently does no error checking (do this in wrapper)
+ * returns 0 - currently does no error checking (can be done in wrapper)
  */
 int splint(const double *pxa,       // Same input as to spline: px
                 const double *pya,  // Same input as to spline: py
@@ -84,11 +82,8 @@ int splint(const double *pxa,       // Same input as to spline: px
         private(h, b, a)
         for (int i = 0; i < nx; i++)
         {
-                /*printf("tid: %d i: %d \n", omp_get_thread_num(), i);*/
                 if ( (pxa[pklo] <= px[i]) && (pxa[pkhi] > px[i]) ) 
                 {
-                         //printf("caching i: %d x %f pklo %d pkhi %d klo %d khi %d\n",
-                         //           i, px[i], pklo, pkhi, klo, khi);
                         klo = pklo;
                         khi = pkhi;
                 }
