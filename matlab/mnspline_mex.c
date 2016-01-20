@@ -2,7 +2,8 @@
  * mnspline.c - (natural) cubic spline interpolation
  *
  * Interpolates a function y: Nx1
- * evaluated at x: Nx1 with x(1) < x(2) <... x(N)
+ * evaluated at x: Nx1 with x(1) < x(2) <... x(N) 
+ *  (this condition is not checked in input validation)
  * at query points X: Mx1
  * and outputs Y: Mx1
  *
@@ -23,7 +24,8 @@ int mwrapper(const double *x, const double *y, const int n,
         if ( (y2 = (double*) malloc(n * sizeof(double))) == NULL )
                 return -1;
 
-        spline (x, y, n, y2);
+        spline(x, y, n, y2); // Inefficient if the matlab function is called with the same
+                             //  (x, y) arguments several times
         splint(x, y, y2, n,
                X, Y, N);
 
