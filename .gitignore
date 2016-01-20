@@ -2,6 +2,6 @@
 */*.so
 */*.pyc
 .DS_Store
-*.mexmaci64
-*_sandbox
+*/*.mexmaci64
+*/*_sandbox
 
