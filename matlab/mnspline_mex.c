@@ -13,8 +13,8 @@
  *========================================================*/
 
 #include "mex.h"
-#include "mnspline.h"
-#include "stdlib.h"
+#include "../src/mnspline.h"
+#include <stdlib.h>
 
 int mwrapper(const double *x, const double *y, const int n,
                 const double *X, double *Y, const int N)

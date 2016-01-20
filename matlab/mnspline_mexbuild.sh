@@ -14,7 +14,7 @@ OPTFLAGS='-O3 -ffast-math -ftree-vectorize'
 $CC -c -DMX_COMPAT_32   -DMATLAB_MEX_FILE -I$OMPI \
         -I"$MATLABDIR/extern/include" -I"$MATLABDIR/simulink/include" \
         \-fno-common -arch x86_64 -mmacosx-version-min=$OSXV -fexceptions -isysroot $XCODEINC \
-        -fopenmp $OPTFLAGS -DNDEBUG "$SOURCE.c" "$DEPS.c" 
+        -fopenmp $OPTFLAGS -DNDEBUG "$SOURCE.c" "../src/$DEPS.c" 
 
 $CC \-Wl,-twolevel_namespace -undefined error -arch x86_64\
         -mmacosx-version-min=$OSXV -Wl,-syslibroot,$XCODEINC -bundle\
