@@ -63,10 +63,10 @@ int spline(const double *px,      // Ptr to array of function evaluation points,
 int splint(const double *pxa,       // Same input as to spline: px
                 const double *pya,  // Same input as to spline: py
                 const double *py2a, // The output array from spline: py2
-                const size_t n,        // Same input as to spline: n
+                const size_t n,     // Same input as to spline: n
                 const double* px,   // An array of function evaluation points to be interpolated
                 double *py,         // Ptr to array, returns the interpolated function values evaluated at px
-                const size_t nx        // size of array px and py
+                const size_t nx     // size of array px and py
                 )
 {
         size_t klo = 0;
