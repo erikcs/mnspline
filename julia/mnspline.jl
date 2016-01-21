@@ -17,7 +17,7 @@ function mnspline(x::AbstractVector, y::AbstractVector)
     y2 = Array(Float64, n)
         
     r = ccall( (:spline, "mnspline.so"), Int,
-        (Ptr{Cdouble}, Ptr{Cdouble}, Cint, Ptr{Cdouble}),
+        (Ptr{Cdouble}, Ptr{Cdouble}, Csize_t, Ptr{Cdouble}),
         xin, yin, n, y2) == 0 || error("Terminated on malloc failure")
 
     return Spline(xin, yin, n, y2)
@@ -31,8 +31,8 @@ function evaluate(spline::Spline, X::AbstractVector)
     yint = Array(Float64, m)
 
     r = ccall( (:splint, "mnspline.so"), Int,
-        (Ptr{Cdouble}, Ptr{Cdouble}, Ptr{Cdouble}, Cint,
-        Ptr{Cdouble}, Ptr{Cdouble}, Cint),
+        (Ptr{Cdouble}, Ptr{Cdouble}, Ptr{Cdouble}, Csize_t,
+        Ptr{Cdouble}, Ptr{Cdouble}, Csize_t),
         spline.x, spline.y, spline.y2, spline.n,
         Xin, yint, m)
     

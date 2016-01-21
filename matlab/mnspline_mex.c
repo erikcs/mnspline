@@ -17,15 +17,16 @@
 #include "../src/mnspline.h"
 #include <stdlib.h>
 
-int mwrapper(const double *x, const double *y, const int n,
-                const double *X, double *Y, const int N)
-{
+int mwrapper(const double *x, const double *y, const size_t n,
+                const double *X, double *Y, const size_t N)
+{  // Inefficient if the matlab function is called with
+   // the same (x, y, .) arguments several times
+
         double *y2;
         if ( (y2 = (double*) malloc(n * sizeof(double))) == NULL )
                 return -1;
 
-        spline(x, y, n, y2); // Inefficient if the matlab function is called with the same
-                             //  (x, y) arguments several times
+        spline(x, y, n, y2);
         splint(x, y, y2, n,
                X, Y, N);
 

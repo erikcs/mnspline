@@ -1,10 +1,10 @@
-/* mnspline.c
+/* mnspline.c - created January 2016
  * Natural cubic spline interpolation
  * 
  * based on "3.3 Cubic Spline Interpolation" in 
  * Numerical Recipes in C: The Art of Scientific Computing, 2nd edition.
  *
- * With additions: (January 2016)
+ * With additions: 
  *  performs interpolation on an array in parallel (with OpenMP)
  *  caches the previous lookup result to avoid bisecting on every iteration 
  */
@@ -12,16 +12,16 @@
 #include <stdlib.h>
 #include <omp.h>
 
-static inline void bisect(const double *pxa, const double x, int *klo, int *khi);
+static inline void bisect(const double *pxa, const double x, size_t *klo, size_t *khi);
 
 /* spline - calculate the 2nd. derivatives of the interpolating function
  * only needs to be called once - gives input to splint
- * the boundary conditions at x1 and xN is zero.
+ * the boundary condition at x1 and xN is zero.
  * returns -1 on malloc failure. Does no input validation (can be done in wrapper)
  */
-int spline(const double *px,      // Array of function evaluation points, with x[1] < x[2] < ... < x[n]
-                const double *py, // Array of function evaluated at above points
-                const int n,      // Size of array px and py
+int spline(const double *px,      // Ptr to array of function evaluation points, with x[1] < x[2] < ... < x[n]
+                const double *py, // Ptr to array of function evaluated at above points
+                const size_t n,   // Size of array px and py
                 double *py2       // Ptr to array, returns the 2nd derivatives of the interpolating function
                 )
 {
@@ -37,7 +37,7 @@ int spline(const double *px,      // Array of function evaluation points, with x
         py2[0] = 0.0;
         pu[0] = 0.0;
 
-        for (int i = 1; i < n - 1; i++)
+        for (size_t i = 1; i < n - 1; i++)
         {
                 sig     = (px[i] - px[i-1]) / (px[i+1] - px[i-1]);
                 p       = sig * py2[i-1] + 2.0;
@@ -50,7 +50,7 @@ int spline(const double *px,      // Array of function evaluation points, with x
         
         py2[n-1] = (un - qn * pu[n-2]) / (qn * py2[n-2] + 1.0);
 
-        for (int k = n - 2; k >= 0; k--)
+        for (size_t k = n - 1; k-- > 0; )
                 py2[k] = py2[k] * py2[k+1] + pu[k];
 
         free(pu);
@@ -63,16 +63,16 @@ int spline(const double *px,      // Array of function evaluation points, with x
 int splint(const double *pxa,       // Same input as to spline: px
                 const double *pya,  // Same input as to spline: py
                 const double *py2a, // The output array from spline: py2
-                const int n,        // Same input as to spline: n
+                const size_t n,        // Same input as to spline: n
                 const double* px,   // An array of function evaluation points to be interpolated
                 double *py,         // Ptr to array, returns the interpolated function values evaluated at px
-                const int nx        // size of array px and py
+                const size_t nx        // size of array px and py
                 )
 {
-        int klo = 0;
-        int khi = n - 1;
-        int pklo = 0;
-        int pkhi = 1;
+        size_t klo = 0;
+        size_t khi = n - 1;
+        size_t pklo = 0;
+        size_t pkhi = 1;
         double h;
         double b;
         double a;
@@ -80,7 +80,7 @@ int splint(const double *pxa,       // Same input as to spline: px
         #pragma omp parallel for \
         firstprivate(klo, khi, pklo, pkhi) \
         private(h, b, a)
-        for (int i = 0; i < nx; i++)
+        for (size_t i = 0; i < nx; i++)
         {
                 if ( (pxa[pklo] <= px[i]) && (pxa[pkhi] > px[i]) ) 
                 {
@@ -106,9 +106,9 @@ int splint(const double *pxa,       // Same input as to spline: px
         return 0;
 }
 
-static inline void bisect(const double *pxa, const double x, int *klo, int *khi)
+static inline void bisect(const double *pxa, const double x, size_t *klo, size_t *khi)
 {
-        int mid;
+        size_t mid;
         while (*khi - *klo > 1)
         {
                 mid = *klo + ((*khi - *klo) >> 1); 
@@ -119,6 +119,7 @@ static inline void bisect(const double *pxa, const double x, int *klo, int *khi)
         }
 }
 
+#define DEBUG 1
 #ifdef DEBUG
 #include <stdio.h>
 int main() {
