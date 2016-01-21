@@ -119,7 +119,6 @@ static inline void bisect(const double *pxa, const double x, size_t *klo, size_t
         }
 }
 
-#define DEBUG 1
 #ifdef DEBUG
 #include <stdio.h>
 int main() {
@@ -156,4 +155,3 @@ int main() {
                                 y2[i], y2desired[i], yint[i], yintdesired[i]);
 }
 #endif
-
