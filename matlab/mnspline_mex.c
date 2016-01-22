@@ -17,50 +17,51 @@
 #include "../src/mnspline.h"
 #include <stdlib.h>
 
+/*  Inefficient if the matlab function is called with
+ *  the same (x, y, .) arguments several times */
 int mwrapper(const double *x, const double *y, const size_t n,
-                const double *X, double *Y, const size_t N)
-{  // Inefficient if the matlab function is called with
-   // the same (x, y, .) arguments several times
+        const double *X, double *Y, const size_t N)
+{  
+    double *y2;
+    if ( (y2 = (double*) malloc(n * sizeof(double))) == NULL )
+        return -1;
 
-        double *y2;
-        if ( (y2 = (double*) malloc(n * sizeof(double))) == NULL )
-                return -1;
+    spline(x, y, n, y2);
+    splint(x, y, y2, n,
+            X, Y, N);
 
-        spline(x, y, n, y2);
-        splint(x, y, y2, n,
-               X, Y, N);
+    free(y2); 
 
-        free(y2); 
-
-        return 0;
+    return 0;
 }
 
 void mexFunction( int nlhs, mxArray *plhs[],
-                  int nrhs, const mxArray *prhs[] )
+        int nrhs, const mxArray *prhs[] )
 {
-        /* check for proper number of arguments */
-        if ( nrhs!=3 )
-                mexErrMsgIdAndTxt("mnspline:nrhs", "Three inputs required.");
+    /* check for proper number of arguments */
+    if ( nrhs!=3 )
+        mexErrMsgIdAndTxt("mnspline:nrhs", "Three inputs required.");
 
-         /* get dimension of the inputs */
-        int n = mxGetM(prhs[0]);
-        int N = mxGetM(prhs[2]);
-        if ( n != mxGetM(prhs[1]) )
-                mexErrMsgIdAndTxt("mnspline:xxx", "First two inputs needs to be of same dimension");
+    /* get dimension of the inputs */
+    int n = mxGetM(prhs[0]);
+    int N = mxGetM(prhs[2]);
+    if ( n != mxGetM(prhs[1]) )
+        mexErrMsgIdAndTxt("mnspline:xxx", 
+                "First two inputs needs to be of same dimension");
 
-        /* create output array and get a pointer to the real data in the output matrix */
-        plhs[0] = mxCreateDoubleMatrix((mwSize) N, 1, mxREAL);
-        double *Y = mxGetPr(plhs[0]);
+    /* create output array and get a ptr to the data in the output matrix */
+    plhs[0] = mxCreateDoubleMatrix((mwSize) N, 1, mxREAL);
+    double *Y = mxGetPr(plhs[0]);
 
-        /* create a pointer to the real data in the input matrix  */
-        double *x  = mxGetPr(prhs[0]);
-        double *y  = mxGetPr(prhs[1]);
-        double *X  = mxGetPr(prhs[2]);
+    /* create a pointer to the real data in the input matrix  */
+    double *x  = mxGetPr(prhs[0]);
+    double *y  = mxGetPr(prhs[1]);
+    double *X  = mxGetPr(prhs[2]);
 
-       int r =  mwrapper(x, y, n,
-                         X, Y, N);
+    int r =  mwrapper(x, y, n,
+            X, Y, N);
 
-       if (r != 0)
-               mexErrMsgIdAndTxt("mnspline:xxx", "Terminated on malloc failure");
+    if (r != 0)
+        mexErrMsgIdAndTxt("mnspline:xxx", "Terminated on malloc failure");
 }
 
