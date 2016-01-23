@@ -27,7 +27,7 @@ function mnspline(x::AbstractVector, y::AbstractVector)
     return Spline(xin, yin, n, y2)
 end
 
-function evaluate(spline::Spline, X::AbstractVector)
+function evaluate(spline::Spline, X::AbstractVector, blookup::Bool=false)
     m = length(X)
 
     Xin = convert(Vector{Float64}, X)
@@ -36,12 +36,13 @@ function evaluate(spline::Spline, X::AbstractVector)
 
     ccall( (:splint, lib), Int,
         (Ptr{Cdouble}, Ptr{Cdouble}, Ptr{Cdouble}, Csize_t,
-        Ptr{Cdouble}, Ptr{Cdouble}, Csize_t),
+        Ptr{Cdouble}, Ptr{Cdouble}, Csize_t, Cint),
         spline.x, spline.y, spline.y2, spline.n,
-        Xin, yint, m)
+        Xin, yint, m, blookup)
     
     return yint
 end
 
-Base.call(spline::Spline, X::AbstractVector) = evaluate(spline, X)
+Base.call(spline::Spline, X::AbstractVector; blookup::Bool=false) =
+                                                evaluate(spline, X, blookup)
 

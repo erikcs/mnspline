@@ -6,10 +6,12 @@
  *  (this condition is not checked in input validation)
  * at query points X: Mx1
  * and outputs Y: Mx1
+ * with lookup method `blookup`: = 0 linear probe
+ *                               = 1 bisection
  *
  * The calling syntax is:
  *
- *		Y = mnspline(x, y, X)
+ *		Y = mnspline(x, y, X, blookup)
  *
  *========================================================*/
 
@@ -20,7 +22,7 @@
 /*  Inefficient if the matlab function is called with
  *  the same (x, y, .) arguments several times */
 int mwrapper(const double *x, const double *y, const size_t n,
-             const double *X, double *Y, const size_t N)
+             const double *X, double *Y, const size_t N, const int blookup)
 {  
     double *y2;
     if ( (y2 = (double*) malloc(n * sizeof(double))) == NULL )
@@ -28,7 +30,7 @@ int mwrapper(const double *x, const double *y, const size_t n,
 
     spline(x, y, n, y2);
     splint(x, y, y2, n,
-            X, Y, N);
+            X, Y, N, blookup);
 
     free(y2); 
 
@@ -39,7 +41,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
                   int nrhs, const mxArray *prhs[] )
 {
     /* check for proper number of arguments */
-    if ( nrhs!=3 )
+    if ( nrhs!=4 )
         mexErrMsgIdAndTxt("mnspline:nrhs", "Three inputs required.");
 
     /* get dimension of the inputs */
@@ -58,8 +60,11 @@ void mexFunction( int nlhs, mxArray *plhs[],
     double *y  = mxGetPr(prhs[1]);
     double *X  = mxGetPr(prhs[2]);
 
+    /* get the scalar input value */
+    int blookup = mxGetScalar(prhs[3]);
+
     int r =  mwrapper(x, y, n,
-                      X, Y, N);
+                      X, Y, N, blookup);
 
     if (r != 0)
         mexErrMsgIdAndTxt("mnspline:xxx", "Terminated on malloc failure");

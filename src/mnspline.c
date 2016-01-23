@@ -6,14 +6,20 @@
  *
  * With additions: 
  *  performs interpolation on an array in parallel (with OpenMP)
- *  caches the previous lookup result to avoid bisecting on every iteration 
+ *  caches lookup results, with either a linear probe or bisection
  */
 
 #include <stdlib.h>
+#include <stdbool.h>
 #include <omp.h>
 
-static inline void 
-bisect(const double *pxa, const double x, size_t *klo, size_t *khi);
+inline size_t 
+b_search(const double *pxa, const double x, const size_t idxlow,
+         const size_t idxhigh);
+
+inline bool
+lin_search(const double *pxa, const double x, const size_t idxlow,
+           const size_t idxhigh, size_t *index);
 
 /* spline - calculate the 2nd. derivatives of the interpolating function
  * only needs to be called once - gives input to splint
@@ -72,62 +78,108 @@ spline(const double *px,  const double *py, const size_t n, double *py2)
  * px: Ptr to array of function evaluation points to be interpolated
  * py: Ptr to array, returns the interpolated function values evaluated at px
  * nx: Size of array px and py
+ * blookup: 0=does linear probe on interpolation table,
+ *          1=does binary search on interpolation table
  */
 int
 splint(const double *pxa, const double *pya, const double *py2a,
-       const size_t n, const double* px, double *py, const size_t nx)
+       const size_t n, const double* px, double *py, const size_t nx,
+       const int blookup)
 {
-    size_t klo = 0;
-    size_t khi = n - 1;
-    size_t pklo = 0;
-    size_t pkhi = 1;
+    size_t klo;
+    size_t khi;
+    size_t prev_idx = 0;
+
     double h;
     double b;
     double a;
+    double x;
 
     #pragma omp parallel for \
-    firstprivate(klo, khi, pklo, pkhi) \
-    private(h, b, a)
+    firstprivate(prev_idx) \
+    private(klo, khi, h, b, a, x)
     for (size_t i = 0; i < nx; i++)
     {
-        if ( (pxa[pklo] <= px[i]) && (pxa[pkhi] > px[i]) ) 
+        x = px[i];
+
+        /* LINEAR */
+        if (blookup == 0) 
         {
-            klo = pklo;
-            khi = pkhi;
+            if ( lin_search(pxa, x, prev_idx,  n - 1, &klo) )
+            {
+                khi = klo + 1;
+                prev_idx = klo;
+            }
+            else
+            {
+                klo = b_search(pxa, x, 0, n - 1);
+                khi = klo + 1;
+                prev_idx = klo;
+            }
         }
-        else
-        { 
-            bisect(pxa, px[i], &klo, &khi);
-            pklo = klo;
-            pkhi = khi;
-        }
+       /* BISECTION */
+       else if (blookup == 1) 
+       {
+           if ( x >= pxa[prev_idx + 1] ) 
+               prev_idx = b_search(pxa, x, prev_idx, n - 1);
+
+           else if ( x < pxa[prev_idx] )
+               prev_idx = b_search(pxa, x, 0, prev_idx);
+
+        klo = prev_idx;
+        khi = klo + 1;
+       }
+
+       /* COMPUTE */
         h     = pxa[khi] - pxa[klo];
         a     = (pxa[khi] - px[i]) / h;
         b     = (px[i] - pxa[klo]) / h;
         py[i] = a * pya[klo] + b * pya[khi] + 
-            ((a*a*a -a) * py2a[klo] + (b*b*b - b) * py2a[khi]) * (h*h) / 6.0;
-
-        klo = 0;
-        khi = n - 1;
+            ((a*a*a -a) * py2a[klo] + (b*b*b - b) * py2a[khi]) * h*h / 6.0;
     }
 
     return 0;
 }
 
-static inline void
-bisect(const double *pxa, const double x, size_t *klo, size_t *khi)
+inline size_t 
+b_search(const double *pxa, const double x, const size_t idxlow,
+         const size_t idxhigh)
 {
+    size_t ilo = idxlow;
+    size_t ihi = idxhigh;
     size_t mid;
-    while (*khi - *klo > 1)
+    while (ihi > ilo + 1)
     {
-        mid = *klo + ((*khi - *klo) >> 1); 
+        mid = ilo + ((ihi - ilo) / 2);
         if (pxa[mid] > x)
-            *khi = mid;
+            ihi = mid;
         else
-            *klo = mid;
+            ilo = mid;
     }
+
+    return ilo;
 }
 
+inline bool
+lin_search(const double *pxa, const double x, const size_t idxlow,
+           const size_t idxhigh, size_t *index)
+{
+    bool found = false;
+
+    for (size_t i = idxlow; i < idxhigh; i++)
+    {
+        if (pxa[i] <= x && pxa[i+1] > x)
+        {
+            found = true;
+            *index = i;
+            break;
+        }
+    }
+
+    return found; 
+}
+
+/*#define DEBUG 1*/
 #ifdef DEBUG
 #include <stdio.h>
 int main() {
@@ -155,8 +207,18 @@ int main() {
 
     spline(&x[0], &y[0], 10, &y2[0]);
     splint(&x[0], &y[0], &y2[0], 10,
-            &xint[0], &yint[0], 10);
+            &xint[0], &yint[0], 10, 0);
 
+    printf("%s", "linear probe\n");
+    printf("y2\ty2(tst)\tyint\tyint(tst)\n");
+    for (int i=0; i < 10; i++) 
+        printf("%.3f\t%.3f\t%.3f\t%.3f\n",
+                y2[i], y2desired[i], yint[i], yintdesired[i]);
+
+    splint(&x[0], &y[0], &y2[0], 10,
+            &xint[0], &yint[0], 10, 1);
+
+    printf("%s", "bisection\n");
     printf("y2\ty2(tst)\tyint\tyint(tst)\n");
     for (int i=0; i < 10; i++) 
         printf("%.3f\t%.3f\t%.3f\t%.3f\n",
