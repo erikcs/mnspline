@@ -1,6 +1,10 @@
 # mnspline.jl
 
-type Spline
+nixlib = "mnspline.so"
+winlib = "mnspline.dll"
+const lib = @unix? nixlib : winlib
+
+immutable Spline
     x::Vector{Float64}
     y::Vector{Float64}
     n::Int
@@ -16,7 +20,7 @@ function mnspline(x::AbstractVector, y::AbstractVector)
 
     y2 = Array(Float64, n)
         
-    r = ccall( (:spline, "mnspline.so"), Int,
+    ccall( (:spline, lib), Int,
         (Ptr{Cdouble}, Ptr{Cdouble}, Csize_t, Ptr{Cdouble}),
         xin, yin, n, y2) == 0 || error("Terminated on malloc failure")
 
@@ -30,7 +34,7 @@ function evaluate(spline::Spline, X::AbstractVector)
     
     yint = Array(Float64, m)
 
-    r = ccall( (:splint, "mnspline.so"), Int,
+    ccall( (:splint, lib), Int,
         (Ptr{Cdouble}, Ptr{Cdouble}, Ptr{Cdouble}, Csize_t,
         Ptr{Cdouble}, Ptr{Cdouble}, Csize_t),
         spline.x, spline.y, spline.y2, spline.n,
