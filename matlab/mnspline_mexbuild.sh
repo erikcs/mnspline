@@ -25,8 +25,8 @@ $CC -c -DMX_COMPAT_32   -DMATLAB_MEX_FILE -I$OMPI \
 $CC \-Wl,-twolevel_namespace -undefined error -arch x86_64\
         -mmacosx-version-min=$OSXV -Wl,-syslibroot,$XCODEINC -bundle\
         -Wl,-exported_symbols_list,"$MATLABDIR/extern/lib/maci64/mexFunction.map"\
-        -fopenmp "$SOURCE.o" "$DEPS.o" -O -Wl,-exported_symbols_list,\
-        "$MATLABDIR/extern/lib/maci64/mexFunction.map"\
+        -fopenmp "$SOURCE.o" "$DEPS.o"\
+        -O -Wl,-exported_symbols_list,"$MATLABDIR/extern/lib/maci64/mexFunction.map"\
         -L$OMPL   -L"$MATLABDIR/bin/maci64" -lmx -lmex -lmat -lc++\
         -o $TARGET
 
