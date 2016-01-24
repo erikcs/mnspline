@@ -5,7 +5,7 @@
  * Numerical Recipes in C: The Art of Scientific Computing, 2nd edition.
  *
  * With additions: 
- *  performs interpolation on an array in parallel (with OpenMP)
+ *  performs the lookup on the array in parallel (with OpenMP)
  *  caches lookup results, with either a linear probe or bisection
  */
 
@@ -13,10 +13,15 @@
 #include <stdbool.h>
 #include <omp.h>
 
+/*#define DEBUG 1*/
+#ifdef DEBUG
+#include <stdio.h>
+#endif
+
 inline size_t 
 b_search(const double *pxa, const double x, const size_t idxlow,
          const size_t idxhigh);
-
+ 
 inline bool
 lin_search(const double *pxa, const double x, const size_t idxlow,
            const size_t idxhigh, size_t *index);
@@ -36,8 +41,8 @@ lin_search(const double *pxa, const double x, const size_t idxlow,
 int
 spline(const double *px,  const double *py, const size_t n, double *py2)
 {
-    double qn = 0.0;
-    double un = 0.0;
+    double qn = 0.0; /* Upper boundary condition set to be 'natural' */
+    double un = 0.0;  /* */
     double p;
     double sig;
     double *pu;
@@ -45,9 +50,10 @@ spline(const double *px,  const double *py, const size_t n, double *py2)
     if ( (pu = (double*) malloc((n-1) * sizeof(double))) == NULL )
         return -1;
 
-    py2[0] = 0.0;
-    pu[0] = 0.0;
+    py2[0] = 0.0; /* Lower boundary condition set to be 'natural' */
+    pu[0] = 0.0;  /* */
 
+    /* The Tridiagonal algorithm */
     for (size_t i = 1; i < n - 1; i++)
     {
         sig     = (px[i] - px[i-1]) / (px[i+1] - px[i-1]);
@@ -110,7 +116,7 @@ splint(const double *pxa, const double *pya, const double *py2a,
                 khi = klo + 1;
                 prev_idx = klo;
             }
-            else
+            else /* The linear probe did not find our x-val */
             {
                 klo = b_search(pxa, x, 0, n - 1);
                 khi = klo + 1;
@@ -179,7 +185,6 @@ lin_search(const double *pxa, const double x, const size_t idxlow,
     return found; 
 }
 
-/*#define DEBUG 1*/
 #ifdef DEBUG
 #include <stdio.h>
 int main() {
