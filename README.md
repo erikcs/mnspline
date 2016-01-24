@@ -31,7 +31,7 @@ end
   0.303440 seconds (401 allocations: 76.311 MB, 13.35% gc time)
   0.080551 seconds (301 allocations: 76.303 MB, 8.49% gc time)
 ```
-the bulk of the time is spent solving the triagonal system (which is still serial):
+the bulk of the time is spent solving the tridiagonal system (which is still serial):
 
 ```julia
 @time for i=1:nloops
