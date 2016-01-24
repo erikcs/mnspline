@@ -7,7 +7,7 @@ C implementation based on *Numerical Recipes in C*, with wrappers for ```Julia, 
 
 ###### gridsize  = 100 000 (monotonically increasing)
 ###### julia
-called with linear probing as the lookup method (```blookup=0```)
+called with linear probing as the lookup method (```blookup=0```, default)
 ```julia
 n = 100000
 nloops = div(10000000, n)
@@ -31,6 +31,26 @@ end
   0.303440 seconds (401 allocations: 76.311 MB, 13.35% gc time)
   0.080551 seconds (301 allocations: 76.303 MB, 8.49% gc time)
 ```
+the bulk of the time is spent solving the triagonal system (which is still serial):
+
+```julia
+@time for i=1:nloops
+    splD = Dierckx.Spline1D(x, y; k=2)
+    splD(X)
+end
+
+@time for i=1:nloops
+    spl = mnspline(x, y)
+    spl(X, blookup=false)
+end
+```
+
+```
+  1.394155 seconds (1.90 k allocations: 1.527 GB, 6.16% gc time)
+  0.296432 seconds (701 allocations: 152.615 MB, 6.47% gc time)
+```
+
+
 ###### gridsize  = 100 000 (unordered)
 called with bisection as the lookup method (```blookup=1```)
 
@@ -50,11 +70,8 @@ end
   0.744946 seconds (401 allocations: 76.311 MB, 0.88% gc time)
 ```
 
-
-
-
-
-###### matlab (gridsize  = 100 000, monotonically increasing, ```blookup=0```)
+###### matlab (gridsize  = 100 000, monotonically increasing)
+(```blookup=0```)
 ```matlab
 tic
 for i=1:nloops
