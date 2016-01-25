@@ -1,16 +1,18 @@
-# Makefile for OSX / Windows (with MinGW)
+# Makefile for OSX  (brew gcc) / Windows (with MinGW)
+CFLAGS=-fopenmp -O3
 
-UNAME := $(shell uname)
-ifeq ($(UNAME), Darwin)
-	TARGET = mnspline.so
-	CC=clang-omp
-else
+ifeq ($(OS),Windows_NT)
 	TARGET = mnspline.dll
 	CC=gcc
 endif
-
-CLFLAGS=-fopenmp -O3
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Darwin)
+	TARGET=mnspline.so
+	CC=gcc-5
+	CFLAGS += -fPIC
+endif
+# Linux...
 
 mnspline:
-	$(CC) ../src/mnspline.c -o $(TARGET) -shared -fPIC $(CLFLAGS)
+	$(CC) ../src/mnspline.c -o $(TARGET) -shared $(CFLAGS)
 
