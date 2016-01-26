@@ -18,10 +18,10 @@
 #include <stdio.h>
 #endif
 
-static inline size_t
+inline size_t
 b_search(const double *pxa, double x, size_t idxlow, size_t idxhigh);
 
-static inline bool
+inline bool
 lin_search(const double *pxa, double x, size_t idxlow, size_t idxhigh,
            size_t *index);
 
@@ -59,9 +59,9 @@ spline(const double *px, const double *py, size_t n, double *py2)
         p       = sig * py2[i-1] + 2.0;
         py2[i]  = (sig - 1.0) / p;
         pu[i]   = (py[i+1] - py[i]) / (px[i+1] - px[i]) - 
-            (py[i] - py[i-1]) / (px[i] - px[i-1]);
+                  (py[i] - py[i-1]) / (px[i] - px[i-1]);
         pu[i]   = (6.0 * pu[i] / (px[i+1] - px[i-1]) -
-                sig * pu[i-1]) / p; 
+                  sig * pu[i-1]) / p; 
     }
 
     py2[n-1] = (un - qn * pu[n-2]) / (qn * py2[n-2] + 1.0);
@@ -146,7 +146,7 @@ splint(const double *pxa, const double *pya, const double *py2a,
 }
 
 /* Returns an index i s.t. pxa[i] <= x < pxa[i+1] */
-static inline size_t
+inline size_t
 b_search(const double *pxa, double x, size_t idxlow, size_t idxhigh)
 {
     size_t ilo = idxlow;
@@ -165,7 +165,7 @@ b_search(const double *pxa, double x, size_t idxlow, size_t idxhigh)
 }
 
 /* Linear probing for an i st. pxa[i] <= x < pxa[i+1] */
-static inline bool
+inline bool
 lin_search(const double *pxa, double x, size_t idxlow, size_t idxhigh,
            size_t *index)
 {
