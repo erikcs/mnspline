@@ -18,13 +18,12 @@
 #include <stdio.h>
 #endif
 
-inline size_t 
-b_search(const double *pxa, const double x, const size_t idxlow,
-         const size_t idxhigh);
- 
-inline bool
-lin_search(const double *pxa, const double x, const size_t idxlow,
-           const size_t idxhigh, size_t *index);
+static inline size_t
+b_search(const double *pxa, double x, size_t idxlow, size_t idxhigh);
+
+static inline bool
+lin_search(const double *pxa, double x, size_t idxlow, size_t idxhigh,
+           size_t *index);
 
 /* spline - calculate the 2nd. derivatives of the interpolating function
  * only needs to be called once - gives input to splint
@@ -39,7 +38,7 @@ lin_search(const double *pxa, const double x, const size_t idxlow,
  * py2: Ptr to array, returns the 2nd derivatives of the interpolating function
  */
 int
-spline(const double *px,  const double *py, const size_t n, double *py2)
+spline(const double *px, const double *py, size_t n, double *py2)
 {
     double qn = 0.0; /* Upper boundary condition set to be 'natural' */
     double un = 0.0;  /* */
@@ -89,8 +88,7 @@ spline(const double *px,  const double *py, const size_t n, double *py2)
  */
 int
 splint(const double *pxa, const double *pya, const double *py2a,
-       const size_t n, const double* px, double *py, const size_t nx,
-       const int blookup)
+       size_t n, const double* px, double *py, size_t nx, int blookup)
 {
     size_t klo;
     size_t khi;
@@ -147,9 +145,9 @@ splint(const double *pxa, const double *pya, const double *py2a,
     return 0;
 }
 
-inline size_t 
-b_search(const double *pxa, const double x, const size_t idxlow,
-         const size_t idxhigh)
+/* Returns an index i s.t. pxa[i] <= x < pxa[i+1] */
+static inline size_t
+b_search(const double *pxa, double x, size_t idxlow, size_t idxhigh)
 {
     size_t ilo = idxlow;
     size_t ihi = idxhigh;
@@ -166,9 +164,10 @@ b_search(const double *pxa, const double x, const size_t idxlow,
     return ilo;
 }
 
-inline bool
-lin_search(const double *pxa, const double x, const size_t idxlow,
-           const size_t idxhigh, size_t *index)
+/* Linear probing for an i st. pxa[i] <= x < pxa[i+1] */
+static inline bool
+lin_search(const double *pxa, double x, size_t idxlow, size_t idxhigh,
+           size_t *index)
 {
     bool found = false;
 

@@ -21,8 +21,8 @@
 
 /*  Inefficient if the matlab function is called with
  *  the same (x, y, .) arguments several times */
-int mwrapper(const double *x, const double *y, const size_t n,
-             const double *X, double *Y, const size_t N, const int blookup)
+int mwrapper(const double *x, const double *y, size_t n,
+             const double *X, double *Y, size_t N, int blookup)
 {  
     double *y2;
     if ( (y2 = (double*) malloc(n * sizeof(double))) == NULL )
@@ -30,7 +30,7 @@ int mwrapper(const double *x, const double *y, const size_t n,
 
     spline(x, y, n, y2);
     splint(x, y, y2, n,
-            X, Y, N, blookup);
+           X, Y, N, blookup);
 
     free(y2); 
 
@@ -42,7 +42,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
 {
     /* check for proper number of arguments */
     if ( nrhs!=4 )
-        mexErrMsgIdAndTxt("mnspline:nrhs", "Three inputs required.");
+        mexErrMsgIdAndTxt("mnspline:nrhs", "Four inputs required.");
 
     /* get dimension of the inputs */
     int n = mxGetM(prhs[0]);
