@@ -6,3 +6,11 @@
 matlab/sandbox.m
 julia/_sandbox.ipynb
 sandbox.m~
+python/_pysandbox.ipynb
+python/*.c
+python/build
+python/*.html
+src/Makefile
+src/test.txt
+julia/tmp.c
+julia/tmp.jl
