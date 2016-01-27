@@ -18,7 +18,6 @@ ext_modules = [Extension("pymnspline",
 setup(
      name = 'pymnspline',
      cmdclass = {'build_ext': build_ext},
-     ext_modules = ext_modules,
-     url='https://github.com/nuffe/mnspline'
+     ext_modules = ext_modules
 )
 

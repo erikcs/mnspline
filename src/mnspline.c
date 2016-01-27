@@ -1,12 +1,12 @@
-/* mnspline.c - created January 2016
+/* mnspline.c
  * Natural cubic spline interpolation
  * 
- * based on "3.3 Cubic Spline Interpolation" in 
+ * adapted from "3.3 Cubic Spline Interpolation" in 
  * Numerical Recipes in C: The Art of Scientific Computing, 2nd edition.
  *
- * With additions: 
+ * with additions: 
  *  performs the lookup on the array in parallel (with OpenMP)
- *  caches lookup results, with either a linear probe or bisection
+ *  caches the previous lookup results, with either a linear probe or bisection
  */
 
 #include <stdlib.h>
