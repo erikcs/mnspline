@@ -1,6 +1,6 @@
 ###### Installation
 ```
-$git clone https://github.com/nuffe/mnspline
+$git clone https://github.com/erikcs/mnspline
 $cd julia
 $make
 julia> include("mnspline.jl")
